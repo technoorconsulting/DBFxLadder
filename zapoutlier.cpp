@@ -59,7 +59,7 @@ bool testBasics(){
 	FxDisplayManager dispMan(&mManager);
 	dispMan.DisplayAllCcy();
 
-	global:CCYIDX idx=global::g_ccyIndex.GetCcyIndex("GBPUSD");
+	global::CCYIDX idx=global::g_ccyIndex.GetCcyIndex("GBPUSD");
 	FxDisplayManager::PRICESIZEMAP pMap=FxDisplayManager::PRICESIZEMAP(new FxDisplayManager::PRICESIZEMAP::element_type);
 	FxDisplayManager::PRICESIZEMAP pMapAsk=FxDisplayManager::PRICESIZEMAP(new FxDisplayManager::PRICESIZEMAP::element_type);
 
