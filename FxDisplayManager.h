@@ -41,15 +41,14 @@ class FxDisplayManager{
 
 public:
 
-	typedef std::shared_ptr<std::set<PriceStruct>> PRICESIZEMAP;
+	typedef std::unique_ptr<std::set<PriceStruct>> PRICESIZEMAP;
 	void AddChangedCcy(unsigned long ccyidx)
 	{
 
 	}
 
 
-	
-	void CalculatePriceSize(const unsigned long ccyid , PRICESIZEMAP bids, PRICESIZEMAP asks){
+	void CalculatePriceSize(const unsigned long ccyid , PRICESIZEMAP& bids, PRICESIZEMAP& asks){
 
 			std::vector<PriceStruct> bidPrices;
 			std::vector<PriceStruct> askPrices;
@@ -70,7 +69,6 @@ public:
 			fxMarket->GetBidAskPrices(id,bidPrices, askPrices);
 			std::sort(bidPrices.begin(), bidPrices.end());
 			std::sort(askPrices.begin(), askPrices.end());
-			std::shared_ptr<std::map<PriceStruct,vector<unsigned long>>> pVec;
 			if(!bidPrices.empty()||!askPrices.empty())
 			{
 				strout<<ccyStr<<" - BID:";
@@ -78,22 +76,53 @@ public:
 				strout<<" ASK:";
 				DisplayVector(strout, askPrices);
 				strout<<std::endl<<std::endl;
-				std::cout<<strout.str(); // todo remove
+				std::cout<<strout.str()<<std::flush; // todo remove
 
 			}
 		}
 	}
 
-	FxDisplayManager(const IMarketManager * fxMark, int maxNumberPrice=3):N(maxNumberPrice),fxMarket(fxMark)
+
+	void DisplayAllCcyAlt()
 	{
-		if(fxMark==0) throw exception(std::exception("Invalid initialistion"));
+		for(unsigned long id=0;id<g_ccyIndex.size();++id)
+		{
+			std::stringstream strout;
+			const std::string ccyStr =global::g_ccyIndex.GetCcyPair(id);
+			std::vector<PriceStruct> bidPrices;
+			std::vector<PriceStruct> askPrices;
+			fxMarket->GetBidAskPrices(id,bidPrices, askPrices);
+			FxDisplayManager::PRICESIZEMAP pMapBid=FxDisplayManager::PRICESIZEMAP(new FxDisplayManager::PRICESIZEMAP::element_type);
+			FxDisplayManager::PRICESIZEMAP pMapAsk=FxDisplayManager::PRICESIZEMAP(new FxDisplayManager::PRICESIZEMAP::element_type);
+			if(pMapBid.get()==0 || pMapAsk.get()==0)
+				throw std::runtime_error("PRICESIZEMAP nullptre Could not allocate memory");
+
+			AccumulateSizeInPriceQuotes(*pMapBid.get(), bidPrices);
+			AccumulateSizeInPriceQuotes(*pMapAsk.get(), askPrices);
+
+			if(!bidPrices.empty()||!askPrices.empty())
+			{
+				strout<<ccyStr<<" - BID:";
+				DisplayVector(strout, pMapBid.get());
+				strout<<" ASK:";
+				DisplayVector(strout, pMapAsk.get());
+				strout<<std::endl<<std::endl;
+				std::cout<<strout.str()<<std::flush; // todo remove
+			}
+		}
+	}
+
+
+	FxDisplayManager(const IMarketManager * fxMark, int maxNumberPrice=3):fxMarket(fxMark), N(maxNumberPrice)
+	{
+		if(fxMark==0) throw std::runtime_error("Invalid initialistion");
 	}
 
 	~FxDisplayManager(){
 
 	}
 private:
-	template<char eC=','>
+	template<char eC=',',long scale=1000000>
 	struct display_price_func
 {
 	std::stringstream & str;
@@ -103,10 +132,10 @@ private:
     void operator()(const PriceStruct & cei) const
     {
         if (cei.size)
-			str<<" "<<cei.size<<"@"<<cei.price<<",";   
+			str<<" "<<(double)cei.size/scale<<"@"<<cei.price<<",";
 	}
 };
-	void DisplayVector (std::stringstream & str, PRICESIZEMAP vec)
+	void DisplayVector (std::stringstream & str, PRICESIZEMAP::element_type * vec) const
 	{
 		display_price_func<> dFunc(str);
 	
@@ -134,7 +163,6 @@ private:
 	{
 		if(vec.empty()) return;
 		double prev=vec[0].price;
-		int prevstartidx=0;
 		unsigned int totalSize=vec[0].size;
 		
 		// group together sizes
