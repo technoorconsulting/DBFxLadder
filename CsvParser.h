@@ -9,8 +9,6 @@
 // Usually I would use fully qualified name but this
 // makes code easier to read
 using namespace std;
-//using std::vector;
-//using std::deque;
 
 
 class CsvFileParser
@@ -28,6 +26,7 @@ public:
     typedef std::vector<string> csvline;
     typedef size_t indextype;
 	std::string sFilename;
+	std::string m_logFileName;
 	istream * GetStream();
     CsvFileParser(char * filename, char * outputname);
     virtual ~CsvFileParser(void);
