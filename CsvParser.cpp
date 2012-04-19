@@ -4,7 +4,8 @@ using namespace std;
 
 CsvFileParser::CsvFileParser(char * filename, char * outname):sFilename(filename)
 {
-f_in = new ifstream(filename);
+	f_in = new ifstream(filename);
+	m_logFileName = outname;
 }
 istream * CsvFileParser:: GetStream()
 {
