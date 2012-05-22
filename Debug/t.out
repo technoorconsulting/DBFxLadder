@@ -1,0 +1,3 @@
+Building file: ../src/LaptopDBFX.cpp
+Invoking: GCC C++ Compiler
+g++ -O0 -g3 -Wall -c -fmessage-length=0 -MMD -MP -MF"src/LaptopDBFX.d" -MT"src/LaptopDBFX.d" -o "src/LaptopDBFX.o" "../src/LaptopDBFX.cpp"
