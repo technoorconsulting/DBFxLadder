@@ -3,7 +3,10 @@
 #include <numeric>
 #include <ctime>
 #include <set>
-
+#include <vector>
+#include "glog/logging.h"
+#include "glog/raw_logging.h"
+//using namespace GOOGLE_NAMESPACE;
 class Logger{
 
 
@@ -76,7 +79,7 @@ public:
 				strout<<" ASK:";
 				DisplayVector(strout, askPrices);
 				strout<<std::endl<<std::endl;
-				std::cout<<strout.str()<<std::flush; // todo remove
+				LOG(INFO)<<strout.str()<<std::flush; // todo remove
 
 			}
 		}
@@ -103,11 +106,11 @@ public:
 			if(!bidPrices.empty()||!askPrices.empty())
 			{
 				strout<<ccyStr<<" - BID:";
-				DisplayVector(strout, pMapBid.get());
+				DisplayVectorV(strout, pMapBid.get());
 				strout<<" ASK:";
-				DisplayVector(strout, pMapAsk.get());
+				DisplayVectorV(strout, pMapAsk.get());
 				strout<<std::endl<<std::endl;
-				std::cout<<strout.str()<<std::flush; // todo remove
+				LOG(INFO)<<strout.str()<<std::flush; // todo remove
 			}
 		}
 	}
@@ -132,10 +135,10 @@ private:
     void operator()(const PriceStruct & cei) const
     {
         if (cei.size)
-			str<<" "<<(double)cei.size/scale<<"@"<<cei.price<<",";
+			str<<" "<<(double)cei.size/scale<<"@"<<cei.price<<eC;
 	}
 };
-	void DisplayVector (std::stringstream & str, PRICESIZEMAP::element_type * vec) const
+	void DisplayVectorV (std::stringstream & str, PRICESIZEMAP::element_type * vec) const
 	{
 		display_price_func<> dFunc(str);
 	

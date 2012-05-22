@@ -1,12 +1,16 @@
 #pragma once
 #include "CsvParser.h"
 #include <map>
-#include "maphelper.h"
+//#include "maphelper.h"
 #include <algorithm>
 #include <vector>
 #include <iterator>
 #include "globals.h"
-#include <windows.h>
+#include <memory>
+#include <thread>
+
+#define MYSLEEP(y) usleep(y*1000);
+//#include <windows.h>
 
 using namespace global;
 class FxDataSink{
@@ -39,6 +43,7 @@ public:
 	bool Update( CCYBIDASK & ccyprice)
 	{
 		AddToBid(ccyprice.ccy, ccyprice.bid.price);
+		return false;
 	}
 
 
@@ -80,6 +85,8 @@ class FxMarketManager: public IMarketManager
 	typedef std::map<string, std::shared_ptr<FxDataSink>> MARKETMAP;
 	typedef std::map<string,BIDASK> MARKETTOBIDASK;
 	typedef std::vector<MARKETTOBIDASK> CCYTOMARKETBIDASK; // ccy pairs are indexed by number see GLOBAL
+
+
 public:
 	FxMarketManager()
 	{
@@ -90,13 +97,14 @@ public:
 	void UpdateLadder(const std::string & market, const CCYBIDASK & ccyprice)
 	{
 		unsigned long ccyidx = g_ccyIndex.GetCcyIndex(ccyprice.ccy);
+		std::lock_guard<std::mutex> lk(m); // alternative is to lock per index
+
 		if(UpdateLadder(ccyidx, market, ccyprice))
 		{
 			// todo notify DisplayManager which currencies are updated
 			//updatedCcyPairs.push_back(ccyidx);
 		}
 	}
-
 
 
 	// todo initialise markets
@@ -141,7 +149,7 @@ public:
 private:
 	  CCYTOMARKETBIDASK ccyLadderBidPrice;
 	  MARKETMAP marketToSink;
-
+	  std::mutex m;
 };
 
 /*
@@ -230,7 +238,7 @@ public:
             line = a;
             // now bust the line up into individual words
 			unsigned int numTokensPerLine = 0;
-			string read[ASIZE+1];
+			string read[END+1];
 			while(line != "")
 			{   
 				size_t pos = line.find(',');
@@ -253,12 +261,13 @@ public:
 			ConvertToNum(read[BSIZE],ccyprice.bid.size);
 			ConvertToNum(read[ASK], ccyprice.ask.price);
 			ConvertToNum(read[ASIZE], ccyprice.ask.size);
-			// Purspose of following is to delay the update to simulate real time arrival of quotes
+			// Purpose of following is to delay the update to simulate real time arrival of quotes
 			// Sleep is not most accurate but sufficient for demonstration of principle.
-			// More accurate os timers are avaialble in windows (signal handlers in unix)
+			// More accurate os timers are available in windows (signal handlers in unix)
 			double timestamp = 0;
 			ConvertToNum(read[TIME], timestamp);
-			//Sleep((DWORD)(timestamp-pTimeStamp));
+
+			MYSLEEP((unsigned int)(timestamp-pTimeStamp));
 			pTimeStamp = timestamp;
 			
 			fxData->UpdateLadder(read[MARKET], ccyprice);

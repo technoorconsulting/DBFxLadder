@@ -4,11 +4,13 @@
 #include <vector>
 #include <sstream>
 #include <iosfwd>
-
+#include "glog/logging.h"
 // not generally a good idea.
 // Usually I would use fully qualified name but this
 // makes code easier to read
 using namespace std;
+//using std::vector;
+//using std::deque;
 
 
 class CsvFileParser
@@ -26,9 +28,8 @@ public:
     typedef std::vector<string> csvline;
     typedef size_t indextype;
 	std::string sFilename;
-	std::string m_logFileName;
 	istream * GetStream();
-    CsvFileParser(char * filename, char * outputname);
+    CsvFileParser(const char * filename, const char * outputname);
     virtual ~CsvFileParser(void);
 
 public:

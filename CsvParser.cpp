@@ -1,11 +1,11 @@
-#include "StdAfx.h"
+//#include "stdafx.h"
 #include "CsvParser.h"
 using namespace std;
 
-CsvFileParser::CsvFileParser(char * filename, char * outname):sFilename(filename)
+CsvFileParser::CsvFileParser(const char * filename, const char * outname):sFilename(filename)
 {
-	f_in = new ifstream(filename);
-	m_logFileName = outname;
+google::InitGoogleLogging("test.log");
+f_in = new ifstream(filename);
 }
 istream * CsvFileParser:: GetStream()
 {

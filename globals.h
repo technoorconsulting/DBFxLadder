@@ -1,4 +1,8 @@
 #pragma once
+#include <exception>
+#include <stdexcept>
+
+
 struct PriceStruct{
 	double price;
 	unsigned long size;
@@ -41,7 +45,7 @@ namespace global{
 		string * pKeys;
 		GlobalCCYIndex(){
 			static  unsigned long values[] = { 0,1,2,3,4,5,6,7,8,9 };
-			static  string keys[] = { "EURUSD",
+			static  std::string keys[] = { "EURUSD",
 				"GBPUSD",
 				"EURGBP",
 				"USDCAD",
@@ -52,8 +56,8 @@ namespace global{
 				"USDCHF",
 				"USDJPY"};
 			pKeys = keys;
-			g_ccypairToCod = make_map(keys,values);
-
+			for (int j=0;j<10;++j)
+				g_ccypairToCod.insert(make_pair(keys[j], values[j]));
 		}
 
 		std::size_t size() const
@@ -66,7 +70,7 @@ namespace global{
 			if(it!=g_ccypairToCod.end()){
 				return (*it).second;
 			}
-			throw std::exception("Error CCYPair not found in index. Please alert support.");
+			throw std::runtime_error("Error CCYPair not found in index. Please alert support.");
 		}
 		const std::string & GetCcyPair(unsigned long index) const
 		{
@@ -75,4 +79,8 @@ namespace global{
 	};
 	// End Global
 	static GlobalCCYIndex g_ccyIndex;
+	static GlobalCCYIndex & GetCcyIndexMap() {
+	 return g_ccyIndex;
+	}
+
 }
